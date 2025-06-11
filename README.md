@@ -17,7 +17,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Basic folder structure
 <pre> 
-```.
+.
 └── app/
     ├── .env/
     │   ├── development.env
@@ -75,5 +75,6 @@ samples, guidance on mobile development, and a full API reference.
         │       ├── helpers/
         │       ├── toast_message.dart
         │       └── ...
-        └── main.dart ``` </pre>
+        └── main.dart
+</pre>
 

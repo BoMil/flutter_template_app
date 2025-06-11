@@ -1,0 +1,29 @@
+{
+  "dart.flutterSdkPath": ".fvm/versions/3.24.5",
+  "search.exclude": {
+    "**/.fvm": true
+  },
+  "files.watcherExclude": {
+    "**/.fvm": true
+  },
+  "dart.lineLength": 120,
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+      120
+    ],
+    "editor.formatOnType": false,
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.selectionHighlight": true,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "matchingDocuments",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    }
+  },
+  "arb-editor.suppressedWarnings": [
+    "missing_metadata_for_key"
+  ]
+}

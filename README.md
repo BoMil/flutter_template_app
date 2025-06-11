@@ -15,8 +15,9 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-## Basic folder structure
-.
+<pre> ## Basic folder structure
+
+```.
 └── app/
     ├── .env/
     │   ├── development.env
@@ -74,4 +75,5 @@ samples, guidance on mobile development, and a full API reference.
         │       ├── helpers/
         │       ├── toast_message.dart
         │       └── ...
-        └── main.dart
+        └── main.dart ``` </pre>
+

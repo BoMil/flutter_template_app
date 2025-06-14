@@ -30,28 +30,35 @@ samples, guidance on mobile development, and a full API reference.
         │   └── environment/
         │       └── environment.dart
         ├── core/
-        │   ├── data/
-        │   │   ├── api_services/
-        │   │   │   ├── auth_api_service.dart
-        │   │   │   └── ...
-        │   │   └── external_services/
-        │   │       ├── geocoding/
-        │   │       └── amplitude/
-        │   ├── view/
-        │   │   ├── authorized_view/
-        │   │   │   └── home_page/
-        │   │   │       ├── widgets/...
-        │   │   │       ├── cubits/
-        │   │   │       │   ├── home_page_cubit.dart
-        │   │   │       │   └── ...
-        │   │   │       ├── home_page.dart
+        │   ├── external_services/
+        │   │   ├── geocoding/
+        │   │   └── amplitude/
+        │   ├── features/
+        │   │   ├── home_page/
+        │   │   │   ├── view/
+        │   │   │   │   └── home_page/
+        │   │   │   │       ├── widgets/...
+        │   │   │   │       └── home_page.dart
+        │   │   │   ├── api_services/
+        │   │   │   │   └── ....
+        │   │   │   ├── models/
+        │   │   │   │   └── ...
+        │   │   │   └── cubits/
         │   │   │       └── ...
-        │   │   └── unauthorized_view/
-        │   │       └── login_page/
-        │   │           ├── widgets/...
-        │   │           ├── cubits/...
-        │   │           └── login_page.dart
-        │   ├── l10n/
+        │   │   └── authentication/
+        │   │       ├── view/
+        │   │       │   └── login_page/
+        │   │       │       ├── widgets/... 
+        │   │       │       └── login_page.dart
+        │   │       ├── api_services/
+        │   │       │   └── auth_api_service.dart
+        │   │       ├── models/
+        │   │       │   ├── login_response.dart
+        │   │       │   └── login_request.dart
+        │   │       └── cubits/
+        │   │           ├── auth_cubit/
+        │   │           └── login_page_cubit/
+        │   ├── l10n(ovo su prevodi)/
         │   │   ├── app_en.arb
         │   │   └── ...
         │   ├── shared/
@@ -59,6 +66,7 @@ samples, guidance on mobile development, and a full API reference.
         │   │   ├── enums/
         │   │   ├── models/
         │   │   ├── services/
+        │   │   │   └── api_services/
         │   │   ├── widgets/
         │   │   │   ├── buttons/
         │   │   │   ├── dropdowns/

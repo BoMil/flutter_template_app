@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_template_app/theme/get_theme_color.dart';
 import 'package:flutter_template_app/theme/theme_color.dart';
 
 class SelectableItem extends StatelessWidget {
@@ -33,7 +34,7 @@ class SelectableItem extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
       ),
       child: Material(
-        color: backgroundColor ?? AppColors.secondaryBackground,
+        color: backgroundColor ?? context.colors.secondaryBackground,
         borderRadius: BorderRadius.circular(borderRadius),
         child: InkWell(
           borderRadius: BorderRadius.circular(borderRadius),

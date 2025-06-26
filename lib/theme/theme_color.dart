@@ -3,17 +3,24 @@ import 'package:flutter/material.dart';
 class ThemeColor extends ThemeExtension<ThemeColor> {
   Color primaryBackground;
   Color secondaryBackground;
+  Color primaryText;
 
   ThemeColor({
     required this.primaryBackground,
     required this.secondaryBackground,
+    required this.primaryText,
   });
 
   @override
-  ThemeExtension<ThemeColor> copyWith({Color? primaryBackground, Color? secondaryBackground}) {
+  ThemeExtension<ThemeColor> copyWith({
+    Color? primaryBackground,
+    Color? secondaryBackground,
+    Color? primaryText,
+  }) {
     return ThemeColor(
       primaryBackground: primaryBackground ?? this.primaryBackground,
       secondaryBackground: secondaryBackground ?? this.secondaryBackground,
+      primaryText: primaryText ?? this.primaryText,
     );
   }
 
@@ -25,6 +32,7 @@ class ThemeColor extends ThemeExtension<ThemeColor> {
     return ThemeColor(
       primaryBackground: Color.lerp(primaryBackground, other.primaryBackground, t)!,
       secondaryBackground: Color.lerp(secondaryBackground, other.secondaryBackground, t)!,
+      primaryText: Color.lerp(primaryText, other.primaryText, t)!,
     );
   }
 }
@@ -33,15 +41,16 @@ class AppColors {
   // Light theme
   static const Color primaryBackground = Color.fromRGBO(245, 245, 245, 1);
   static const Color secondaryBackground = Color.fromRGBO(255, 255, 255, 0.9);
+  static const Color primaryText = Color.fromRGBO(15, 15, 15, 1);
 
   // Dark theme
   static const Color primaryBackgroundDark = Color.fromRGBO(15, 15, 15, 1);
   static const Color secondaryBackgroundDark = Color.fromRGBO(23, 23, 23, 1);
+  static const Color primaryTextDark = Color.fromRGBO(255, 255, 255, 1);
 
   // ****************** Other colors ******************
   static const Color baseYellow = Color.fromRGBO(239, 200, 75, 1.0);
   static const Color primaryRed = Color.fromRGBO(235, 46, 37, 1);
-  static const Color primaryText = Color.fromRGBO(15, 15, 15, 0.7);
   static const Color secondaryText = Color.fromRGBO(15, 15, 15, 0.5);
   static const Color textBlue = Color.fromRGBO(0, 122, 255, 1);
   static const Color baseBlack01 = Color.fromRGBO(23, 23, 23, 0.1);
@@ -54,11 +63,13 @@ class AppColors {
 ThemeColor lightThemeColors = ThemeColor(
   primaryBackground: AppColors.primaryBackground,
   secondaryBackground: AppColors.secondaryBackground,
+  primaryText: AppColors.primaryText,
 );
 
 ThemeColor darkThemeColors = ThemeColor(
   primaryBackground: AppColors.primaryBackgroundDark,
   secondaryBackground: AppColors.secondaryBackgroundDark,
+  primaryText: AppColors.primaryTextDark,
 );
 
 String colorToHex(Color color, {bool includeAlpha = false}) {

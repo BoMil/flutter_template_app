@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_template_app/theme/theme_config.dart';
 import 'package:flutter_template_app/theme/themes.dart';
 import 'package:toastification/toastification.dart';
 
@@ -41,15 +42,15 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     RouterState().authCubit = authCubit;
     // TranslationStorage().initTranslation();
-    // ThemeConfig().onThemeChanged = onThemeChange;
-    // _initializeTheme();
+    ThemeConfig().onThemeChanged = onThemeChange;
+    _initializeTheme();
     super.initState();
   }
 
-  // _initializeTheme() async {
-  //   ThemeMode themeMode = await ThemeConfig().initThemeConfig();
-  //   ThemeConfig().changeTheme(themeMode);
-  // }
+  _initializeTheme() async {
+    ThemeMode themeMode = await ThemeConfig().initThemeConfig();
+    ThemeConfig().changeTheme(themeMode);
+  }
 
   @override
   void dispose() {
@@ -91,7 +92,7 @@ class _MyAppState extends State<MyApp> {
           child: MaterialApp.router(
             theme: Themes.light,
             darkTheme: Themes.dark,
-            // themeMode: ThemeConfig().currentTheme,
+            themeMode: ThemeConfig().currentTheme,
             // locale: TranslationStorage().selectedLanguage,
             routerDelegate: Routes().goRouterInstance.routerDelegate,
             routeInformationProvider: Routes().goRouterInstance.routeInformationProvider,

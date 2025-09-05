@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template_app/theme/get_theme_color.dart';
-import 'package:flutter_template_app/theme/theme_color.dart';
 
 class SelectableItem extends StatelessWidget {
   final double borderRadius;

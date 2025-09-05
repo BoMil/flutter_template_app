@@ -1,0 +1,26 @@
+{
+    "@@locale": "es",
+    "seamlessPayments": "Pagos sin inconvenientes para los servicios que impulsan tu vida",
+    "signIn": "Iniciar sesión",
+    "resendCode": "Reenviar en {seconds}s",
+    "helloWorld": "¡Hola Mundo!",
+    "@resendCode": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "switchTheme": "Cambiar tema",
+    "welcomeToLandingPage": "Bienvenido a la página de destino",
+    "yourCurrentThemeIs": "Tu tema actual es {theme}",
+    "@yourCurrentThemeIs": {
+        "placeholders": {
+            "theme": {
+                "type": "String"
+            }
+        }
+    },
+    "changeLanguageToEnglish": "Cambiar idioma a Inglés",
+    "changeLanguageToSpanish": "Cambiar idioma a Español"
+}

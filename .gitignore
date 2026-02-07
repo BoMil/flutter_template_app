@@ -44,6 +44,7 @@ app.*.map.json
 
 #FVM
 .fvm/
+!.fvm/fvm_config.json
 
 #Environment files
 .env

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_template_app/config/tenant/tenant_config.dart';
 
 import 'theme_color.dart';
 
@@ -10,7 +11,11 @@ class Themes {
         TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
       },
     ),
-    colorScheme: ThemeData.light().colorScheme.copyWith(),
+    colorScheme: ThemeData.light().colorScheme.copyWith(
+      primary: TenantConfig().primaryColor,
+      secondary: TenantConfig().accentColor,
+      error: TenantConfig().errorColor,
+    ),
     extensions: <ThemeExtension<dynamic>>[
       lightThemeColors,
     ],
@@ -23,7 +28,11 @@ class Themes {
         TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
       },
     ),
-    colorScheme: ThemeData.dark().colorScheme.copyWith(),
+    colorScheme: ThemeData.dark().colorScheme.copyWith(
+      primary: TenantConfig().primaryColor,
+      secondary: TenantConfig().accentColor,
+      error: TenantConfig().errorColor,
+    ),
     extensions: <ThemeExtension<dynamic>>[darkThemeColors],
   );
 }

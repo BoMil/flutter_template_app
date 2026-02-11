@@ -16,7 +16,7 @@ class InputStyles {
   }) {
     return InputDecoration(
       prefixIcon: prefixIcon,
-      errorStyle: const TextStyle(
+      errorStyle: TextStyle(
         color: AppColors.primaryRed,
         fontSize: 13,
         fontWeight: FontWeight.w400,

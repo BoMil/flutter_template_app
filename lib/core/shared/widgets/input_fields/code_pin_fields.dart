@@ -144,7 +144,7 @@ class _CodePinFieldsState extends State<CodePinFields> {
               // fillColor: AppColors.primaryGray,
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-                borderSide: const BorderSide(color: AppColors.textBlue),
+                borderSide: BorderSide(color: AppColors.textBlue),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(borderRadius)),

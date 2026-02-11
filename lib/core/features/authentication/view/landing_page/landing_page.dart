@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_template_app/config/tenant/tenant_config.dart';
 import 'package:flutter_template_app/config/translations/enums/language.dart';
 import 'package:flutter_template_app/config/translations/translation_storage.dart';
 import 'package:flutter_template_app/core/shared/widgets/cards/selectable_item.dart';
@@ -48,9 +50,20 @@ class _LandingPageState extends State<LandingPage> {
           children: [
             const SizedBox(height: 20),
             Center(
+              child: SvgPicture.asset(
+                TenantConfig().logoPath,
+                height: 60,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
               child: Text(
-                TranslationStorage.translation.helloWorld,
-                style: const TextStyle(fontSize: 20),
+                TenantConfig().appName,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: TenantConfig().primaryColor,
+                ),
               ),
             ),
             const SizedBox(height: 20),

@@ -52,9 +52,9 @@ class BottomNavigationFrame extends StatelessWidget {
             currentIndex: navigationShell.currentIndex,
             // backgroundColor: getSelectedThemeColors(context).baseWhite,
             backgroundColor: context.colors.primaryBackground,
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                icon: BottomNavIcon(svgIconPath: 'assets/svg/bottom_navigation/home.svg'),
+                icon: const BottomNavIcon(svgIconPath: 'assets/svg/bottom_navigation/home.svg'),
                 activeIcon: BottomNavIcon(
                   svgIconPath: 'assets/svg/bottom_navigation/home_selected.svg',
                   selectedIconColor: AppColors.textBlue,
@@ -62,7 +62,7 @@ class BottomNavigationFrame extends StatelessWidget {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: BottomNavIcon(svgIconPath: 'assets/svg/bottom_navigation/history.svg'),
+                icon: const BottomNavIcon(svgIconPath: 'assets/svg/bottom_navigation/history.svg'),
                 activeIcon: BottomNavIcon(
                   svgIconPath: 'assets/svg/bottom_navigation/history_selected.svg',
                   selectedIconColor: AppColors.textBlue,
@@ -126,7 +126,7 @@ class BottomNavIcon extends StatelessWidget {
             child: Container(
               width: 12,
               height: 12,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primaryRed,
                 shape: BoxShape.circle,
               ),

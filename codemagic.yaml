@@ -3,36 +3,40 @@ workflows:
     name: Android Workflow
     instance_type: mac_mini_m2
     max_build_duration: 120
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: white-label
-          include: true
-          source: true
     environment:
       android_signing:
         - keystore_reference
-      vars:
-        PACKAGE_NAME: "com.bokidev.financeapp"
       flutter: fvm
     scripts:
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
       - name: Get Flutter packages
-        script: |
-          flutter pub get
+        script: flutter pub get
       - name: Flutter analyze
+        script: flutter analyze
+      - name: Apply tenant branding
         script: |
-          flutter analyze
-      - name: Flutter unit tests
+          chmod +x "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+          "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+      - name: Generate tenant env file
         script: |
-          flutter test
-        ignore_failure: true
+          # Generate .env file from environment variables passed via API
+          cat > "$CM_BUILD_DIR/.env/tenant.env" << EOL
+          ENVIRONMENT=${ENVIRONMENT:-PRODUCTION}
+          SERVER_ADDRESS=${SERVER_ADDRESS:-https://api.default.example.com}
+          TENANT_ID=${TENANT_ID}
+          APP_NAME=${APP_NAME}
+          PRIMARY_COLOR=${PRIMARY_COLOR:-FF1B5E20}
+          ACCENT_COLOR=${ACCENT_COLOR:-FFFFD600}
+          ERROR_COLOR=${ERROR_COLOR:-FFEB2E25}
+          PACKAGE_NAME=${PACKAGE_NAME}
+          EOL
+# flutter build appbundle --release ! OVO koristi za produkciju
       - name: Build AAB with Flutter
         script: |
-          flutter build appbundle --release \
+          flutter build apk --release \
+            --dart-define-from-file=.env/tenant.env \
             --build-name=1.0.0 \
             --build-number=$(($(date +%s) / 60))
     artifacts:

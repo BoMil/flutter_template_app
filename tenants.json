@@ -1,0 +1,34 @@
+{
+  "whitebank": {
+    "APP_NAME": "White Bank",
+    "PACKAGE_NAME": "com.bokidev.whitebank",
+    "SERVER_ADDRESS": "https://api.whitebank.example.com",
+    "PRIMARY_COLOR": "FF1B5E20",
+    "ACCENT_COLOR": "FFFFD600",
+    "ERROR_COLOR": "FFEB2E25"
+  },
+  "blubank": {
+    "APP_NAME": "Blu Bank",
+    "PACKAGE_NAME": "com.bokidev.blubank",
+    "SERVER_ADDRESS": "https://api.blubank.example.com",
+    "PRIMARY_COLOR": "FF0D47A1",
+    "ACCENT_COLOR": "FFFF6F00",
+    "ERROR_COLOR": "FFEB2E25"
+  },
+  "redbank": {
+    "APP_NAME": "Red Bank",
+    "PACKAGE_NAME": "com.bokidev.redbank",
+    "SERVER_ADDRESS": "https://api.redbank.example.com",
+    "PRIMARY_COLOR": "FFD32F2F",
+    "ACCENT_COLOR": "FFFF6F00",
+    "ERROR_COLOR": "FFEB2E25"
+  },
+  "yellowbank": {
+    "APP_NAME": "Yellow Bank",
+    "PACKAGE_NAME": "com.bokidev.yellowbank",
+    "SERVER_ADDRESS": "https://api.yellowbank.example.com",
+    "PRIMARY_COLOR": "FFF9A825",
+    "ACCENT_COLOR": "FF6D4C41",
+    "ERROR_COLOR": "FFEB2E25"
+  }
+}

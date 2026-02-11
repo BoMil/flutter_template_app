@@ -21,7 +21,7 @@ workflows:
           "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
       - name: Generate tenant env file
         script: |
-          # Generate .env file from environment variables passed via API
+          mkdir -p "$CM_BUILD_DIR/.env"
           cat > "$CM_BUILD_DIR/.env/tenant.env" << EOL
           ENVIRONMENT=${ENVIRONMENT:-PRODUCTION}
           SERVER_ADDRESS=${SERVER_ADDRESS:-https://api.default.example.com}
@@ -40,6 +40,7 @@ workflows:
             --build-name=1.0.0 \
             --build-number=$(($(date +%s) / 60))
     artifacts:
+      - build/**/outputs/**/*.apk
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
     publishing:

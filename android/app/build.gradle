@@ -11,11 +11,11 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-// White-label: read package name from env variable (Codemagic), fallback to default (local dev)
+// White-label: applicationId is dynamic per tenant, namespace stays fixed (matches MainActivity package)
 def tenantPackageName = System.getenv("PACKAGE_NAME") ?: "com.bokidev.whitebank"
 
 android {
-    namespace = tenantPackageName
+    namespace = "com.bokidev.financeapp"
     compileSdk = flutter.compileSdkVersion
 //    ndkVersion = flutter.ndkVersion
     ndkVersion "27.0.12077973"

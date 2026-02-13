@@ -7,6 +7,8 @@ workflows:
       android_signing:
         - keystore_reference
       flutter: fvm
+      vars:
+        FIREBASE_PROJECT_ID: "white-label-financeapp-b274a"
     scripts:
       - name: Set up local.properties
         script: |

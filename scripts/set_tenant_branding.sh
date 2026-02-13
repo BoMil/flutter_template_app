@@ -3,7 +3,7 @@ set -e
 
 # Called from codemagic.yaml with tenant env variables set.
 # Patches native project files with tenant-specific branding.
-# Downloads logo from Firebase Storage, copies app icons from repo.
+# Downloads logo and app icons from Firebase Storage.
 
 # All variables are passed via Codemagic API as environment variables.
 TENANT_ID="${TENANT_ID:?TENANT_ID environment variable is required}"
@@ -18,15 +18,31 @@ echo "=== Applying branding for tenant: $TENANT_ID ==="
 echo "  App Name: $APP_NAME"
 echo "  Package:  $PACKAGE_NAME"
 
+# --- Helper: download file from Firebase Storage ---
+download_from_storage() {
+  local remote_path="$1"
+  local local_path="$2"
+  local encoded_path
+  encoded_path=$(echo "$remote_path" | sed 's/\//%2F/g')
+
+  mkdir -p "$(dirname "$local_path")"
+  local http_code
+  http_code=$(curl -s -o "$local_path" -w "%{http_code}" "$STORAGE_BASE/$encoded_path?alt=media")
+
+  if [ "$http_code" == "200" ]; then
+    return 0
+  else
+    rm -f "$local_path"
+    return 1
+  fi
+}
+
 # --- Download logo from Firebase Storage ---
 LOGO_DIR="$CM_BUILD_DIR/assets/tenants/$TENANT_ID"
-mkdir -p "$LOGO_DIR"
-REMOTE_LOGO="tenants%2F${TENANT_ID}%2Flogo.svg"
-HTTP_CODE=$(curl -s -o "$LOGO_DIR/logo.svg" -w "%{http_code}" "$STORAGE_BASE/$REMOTE_LOGO?alt=media")
-if [ "$HTTP_CODE" == "200" ]; then
+if download_from_storage "tenants/$TENANT_ID/logo.svg" "$LOGO_DIR/logo.svg"; then
   echo "  [OK] Logo downloaded from Firebase Storage"
 else
-  echo "  [WARN] Logo not found in Storage (HTTP $HTTP_CODE), using local if available"
+  echo "  [WARN] Logo not found in Storage, using local if available"
 fi
 
 # --- Android: applicationId and namespace are read from PACKAGE_NAME env var in build.gradle ---
@@ -37,18 +53,18 @@ MANIFEST_FILE="$CM_BUILD_DIR/android/app/src/main/AndroidManifest.xml"
 sed -i'' -e "s/android:label=\"[^\"]*\"/android:label=\"$APP_NAME\"/" "$MANIFEST_FILE"
 echo "  [OK] Android AndroidManifest.xml patched"
 
-# --- Android: Copy tenant app icons (from repo) ---
-TENANT_ANDROID_ICONS="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/app_icon/android"
+# --- Android: Download app icons from Firebase Storage ---
 ANDROID_RES="$CM_BUILD_DIR/android/app/src/main/res"
-if [ -d "$TENANT_ANDROID_ICONS" ]; then
-  for density in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-    if [ -f "$TENANT_ANDROID_ICONS/$density/ic_launcher.png" ]; then
-      cp "$TENANT_ANDROID_ICONS/$density/ic_launcher.png" "$ANDROID_RES/$density/ic_launcher.png"
-    fi
-  done
-  echo "  [OK] Android app icons copied"
+ANDROID_ICONS_FOUND=false
+for density in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+  if download_from_storage "tenants/$TENANT_ID/app_icon/android/$density/ic_launcher.png" "$ANDROID_RES/$density/ic_launcher.png"; then
+    ANDROID_ICONS_FOUND=true
+  fi
+done
+if [ "$ANDROID_ICONS_FOUND" == "true" ]; then
+  echo "  [OK] Android app icons downloaded from Firebase Storage"
 else
-  echo "  [WARN] No Android icons found at $TENANT_ANDROID_ICONS (skipping)"
+  echo "  [WARN] No Android icons found in Storage (skipping)"
 fi
 
 # --- iOS: Patch bundle identifier in project.pbxproj ---
@@ -66,14 +82,15 @@ if [ -f "$PLIST" ]; then
   echo "  [OK] iOS Info.plist patched"
 fi
 
-# --- iOS: Copy tenant app icons (from repo) ---
-TENANT_IOS_ICONS="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/app_icon/ios/AppIcon.appiconset"
+# --- iOS: Download app icons from Firebase Storage (zip) ---
 IOS_ICONS="$CM_BUILD_DIR/ios/Runner/Assets.xcassets/AppIcon.appiconset"
-if [ -d "$TENANT_IOS_ICONS" ]; then
-  cp -R "$TENANT_IOS_ICONS/" "$IOS_ICONS/"
-  echo "  [OK] iOS app icons copied"
+IOS_ZIP="/tmp/appiconset.zip"
+if download_from_storage "tenants/$TENANT_ID/app_icon/ios/AppIcon.appiconset.zip" "$IOS_ZIP"; then
+  unzip -o "$IOS_ZIP" -d "$IOS_ICONS/"
+  rm -f "$IOS_ZIP"
+  echo "  [OK] iOS app icons downloaded and extracted from Firebase Storage"
 else
-  echo "  [WARN] No iOS icons found at $TENANT_IOS_ICONS (skipping)"
+  echo "  [WARN] No iOS icon zip found in Storage (skipping)"
 fi
 
 echo "=== Branding applied successfully for $TENANT_ID ==="

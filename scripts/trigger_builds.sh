@@ -19,8 +19,17 @@ set -e
 #   CM_APP_ID              - Your Codemagic App ID (visible in the project URL)
 #   FIREBASE_PROJECT_ID    - Your Firebase project ID
 
-CM_API_TOKEN="${CM_API_TOKEN:?Set CM_API_TOKEN environment variable (Codemagic > Settings > Integrations)}"
-CM_APP_ID="${CM_APP_ID:?Set CM_APP_ID environment variable (from your Codemagic project URL)}"
+# Load local secrets if available
+SCRIPT_DIR_INIT="$(cd "$(dirname "$0")" && pwd)"
+ENV_LOCAL="$SCRIPT_DIR_INIT/../.env.local"
+if [ -f "$ENV_LOCAL" ]; then
+  set -a
+  source "$ENV_LOCAL"
+  set +a
+fi
+
+CM_API_TOKEN="${CM_API_TOKEN:?Set CM_API_TOKEN in .env.local or as environment variable}"
+CM_APP_ID="${CM_APP_ID:?Set CM_APP_ID in .env.local or as environment variable}"
 FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID:-white-label-financeapp-b274a}"
 BRANCH="${BRANCH:-white-label}"
 WORKFLOW_ID="${WORKFLOW_ID:-android-workflow}"

@@ -53,18 +53,30 @@ MANIFEST_FILE="$CM_BUILD_DIR/android/app/src/main/AndroidManifest.xml"
 sed -i'' -e "s/android:label=\"[^\"]*\"/android:label=\"$APP_NAME\"/" "$MANIFEST_FILE"
 echo "  [OK] Android AndroidManifest.xml patched"
 
-# --- Android: Download app icons from Firebase Storage ---
-ANDROID_RES="$CM_BUILD_DIR/android/app/src/main/res"
-ANDROID_ICONS_FOUND=false
-for density in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-  if download_from_storage "tenants/$TENANT_ID/app_icon/android/$density/ic_launcher.png" "$ANDROID_RES/$density/ic_launcher.png"; then
-    ANDROID_ICONS_FOUND=true
-  fi
-done
-if [ "$ANDROID_ICONS_FOUND" == "true" ]; then
-  echo "  [OK] Android app icons downloaded from Firebase Storage"
+# --- Download app icon and generate launcher icons (Android + iOS) ---
+APP_ICON="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/app_icon.png"
+if download_from_storage "tenants/$TENANT_ID/app_icon.png" "$APP_ICON"; then
+  echo "  [OK] App icon downloaded from Firebase Storage"
+
+  # Generate flutter_launcher_icons.yaml dynamically
+  cat > "$CM_BUILD_DIR/flutter_launcher_icons.yaml" << ICON_EOF
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/tenants/$TENANT_ID/app_icon.png
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: assets/tenants/$TENANT_ID/app_icon.png
+ICON_EOF
+
+  echo "  [OK] flutter_launcher_icons.yaml generated"
+
+  # Run the icon generator
+  cd "$CM_BUILD_DIR"
+  dart run flutter_launcher_icons -f flutter_launcher_icons.yaml
+  echo "  [OK] Launcher icons generated for Android and iOS"
 else
-  echo "  [WARN] No Android icons found in Storage (skipping)"
+  echo "  [WARN] App icon not found in Storage (skipping icon generation)"
 fi
 
 # --- iOS: Patch bundle identifier in project.pbxproj ---
@@ -80,17 +92,6 @@ if [ -f "$PLIST" ]; then
   plutil -replace CFBundleDisplayName -string "$APP_NAME" "$PLIST"
   plutil -replace CFBundleName -string "$APP_NAME" "$PLIST"
   echo "  [OK] iOS Info.plist patched"
-fi
-
-# --- iOS: Download app icons from Firebase Storage (zip) ---
-IOS_ICONS="$CM_BUILD_DIR/ios/Runner/Assets.xcassets/AppIcon.appiconset"
-IOS_ZIP="/tmp/appiconset.zip"
-if download_from_storage "tenants/$TENANT_ID/app_icon/ios/AppIcon.appiconset.zip" "$IOS_ZIP"; then
-  unzip -o "$IOS_ZIP" -d "$IOS_ICONS/"
-  rm -f "$IOS_ZIP"
-  echo "  [OK] iOS app icons downloaded and extracted from Firebase Storage"
-else
-  echo "  [WARN] No iOS icon zip found in Storage (skipping)"
 fi
 
 # --- Download splash logo and generate native splash ---

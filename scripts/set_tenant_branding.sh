@@ -93,4 +93,28 @@ else
   echo "  [WARN] No iOS icon zip found in Storage (skipping)"
 fi
 
+# --- Download splash logo and generate native splash ---
+SPLASH_LOGO="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/splash_logo.png"
+if download_from_storage "tenants/$TENANT_ID/splash_logo.png" "$SPLASH_LOGO"; then
+  echo "  [OK] Splash logo downloaded from Firebase Storage"
+
+  # Generate flutter_native_splash.yaml dynamically
+  cat > "$CM_BUILD_DIR/flutter_native_splash.yaml" << SPLASH_EOF
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/tenants/$TENANT_ID/splash_logo.png
+  android: true
+  ios: true
+SPLASH_EOF
+
+  echo "  [OK] flutter_native_splash.yaml generated"
+
+  # Run the splash generator
+  cd "$CM_BUILD_DIR"
+  dart run flutter_native_splash:create --path=flutter_native_splash.yaml
+  echo "  [OK] Native splash screen generated"
+else
+  echo "  [WARN] Splash logo not found in Storage (skipping splash generation)"
+fi
+
 echo "=== Branding applied successfully for $TENANT_ID ==="

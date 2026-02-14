@@ -3,7 +3,7 @@ set -e
 
 # Called from codemagic.yaml with tenant env variables set.
 # Patches native project files with tenant-specific branding.
-# Downloads logo and app icons from Firebase Storage.
+# Downloads assets from Firebase Storage. Build FAILS if any download or generation fails.
 
 # All variables are passed via Codemagic API as environment variables.
 TENANT_ID="${TENANT_ID:?TENANT_ID environment variable is required}"
@@ -42,7 +42,8 @@ LOGO_DIR="$CM_BUILD_DIR/assets/tenants/$TENANT_ID"
 if download_from_storage "tenants/$TENANT_ID/logo.svg" "$LOGO_DIR/logo.svg"; then
   echo "  [OK] Logo downloaded from Firebase Storage"
 else
-  echo "  [WARN] Logo not found in Storage, using local if available"
+  echo "  [ERROR] Logo not found in Storage: tenants/$TENANT_ID/logo.svg"
+  exit 1
 fi
 
 # --- Android: applicationId and namespace are read from PACKAGE_NAME env var in build.gradle ---
@@ -57,9 +58,13 @@ echo "  [OK] Android AndroidManifest.xml patched"
 APP_ICON="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/app_icon.png"
 if download_from_storage "tenants/$TENANT_ID/app_icon.png" "$APP_ICON"; then
   echo "  [OK] App icon downloaded from Firebase Storage"
+else
+  echo "  [ERROR] App icon not found in Storage: tenants/$TENANT_ID/app_icon.png"
+  exit 1
+fi
 
-  # Generate flutter_launcher_icons.yaml dynamically
-  cat > "$CM_BUILD_DIR/flutter_launcher_icons.yaml" << ICON_EOF
+# Generate flutter_launcher_icons.yaml dynamically
+cat > "$CM_BUILD_DIR/flutter_launcher_icons.yaml" << ICON_EOF
 flutter_launcher_icons:
   android: true
   ios: true
@@ -69,15 +74,12 @@ flutter_launcher_icons:
   adaptive_icon_foreground: assets/tenants/$TENANT_ID/app_icon.png
 ICON_EOF
 
-  echo "  [OK] flutter_launcher_icons.yaml generated"
+echo "  [OK] flutter_launcher_icons.yaml generated"
 
-  # Run the icon generator
-  cd "$CM_BUILD_DIR"
-  dart run flutter_launcher_icons -f flutter_launcher_icons.yaml
-  echo "  [OK] Launcher icons generated for Android and iOS"
-else
-  echo "  [WARN] App icon not found in Storage (skipping icon generation)"
-fi
+# Run the icon generator
+cd "$CM_BUILD_DIR"
+dart run flutter_launcher_icons -f flutter_launcher_icons.yaml
+echo "  [OK] Launcher icons generated for Android and iOS"
 
 # --- iOS: Patch bundle identifier in project.pbxproj ---
 PBXPROJ="$CM_BUILD_DIR/ios/Runner.xcodeproj/project.pbxproj"
@@ -98,24 +100,28 @@ fi
 SPLASH_LOGO="$CM_BUILD_DIR/assets/tenants/$TENANT_ID/splash_logo.png"
 if download_from_storage "tenants/$TENANT_ID/splash_logo.png" "$SPLASH_LOGO"; then
   echo "  [OK] Splash logo downloaded from Firebase Storage"
+else
+  echo "  [ERROR] Splash logo not found in Storage: tenants/$TENANT_ID/splash_logo.png"
+  exit 1
+fi
 
-  # Generate flutter_native_splash.yaml dynamically
-  cat > "$CM_BUILD_DIR/flutter_native_splash.yaml" << SPLASH_EOF
+# Generate flutter_native_splash.yaml dynamically
+cat > "$CM_BUILD_DIR/flutter_native_splash.yaml" << SPLASH_EOF
 flutter_native_splash:
   color: "#ffffff"
   image: assets/tenants/$TENANT_ID/splash_logo.png
   android: true
   ios: true
+  android_12:
+    color: "#ffffff"
+    image: assets/tenants/$TENANT_ID/splash_logo.png
 SPLASH_EOF
 
-  echo "  [OK] flutter_native_splash.yaml generated"
+echo "  [OK] flutter_native_splash.yaml generated"
 
-  # Run the splash generator
-  cd "$CM_BUILD_DIR"
-  dart run flutter_native_splash:create --path=flutter_native_splash.yaml
-  echo "  [OK] Native splash screen generated"
-else
-  echo "  [WARN] Splash logo not found in Storage (skipping splash generation)"
-fi
+# Run the splash generator
+cd "$CM_BUILD_DIR"
+dart run flutter_native_splash:create --path=flutter_native_splash.yaml
+echo "  [OK] Native splash screen generated"
 
 echo "=== Branding applied successfully for $TENANT_ID ==="

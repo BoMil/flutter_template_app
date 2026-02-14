@@ -109,11 +109,11 @@ fi
 cat > "$CM_BUILD_DIR/flutter_native_splash.yaml" << SPLASH_EOF
 flutter_native_splash:
   color: "#ffffff"
-  image: assets/tenants/$TENANT_ID/splash_logo.png
+  image_android: assets/tenants/$TENANT_ID/splash_logo.png
+  image_ios: assets/tenants/$TENANT_ID/splash_logo.png
   android: true
   ios: true
   android_12:
-    color: "#ffffff"
     image: assets/tenants/$TENANT_ID/splash_logo.png
 SPLASH_EOF
 

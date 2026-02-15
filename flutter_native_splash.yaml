@@ -1,0 +1,9 @@
+# This file is used only for local development in case devs want to generate the splash scren for current tenant.
+flutter_native_splash:
+  android: true
+  ios: true
+  color: "#FFFFFF" # Background color of the splash screen
+  image_android: assets/tenants/blubank/splash_logo.png
+  image_ios: assets/tenants/blubank/splash_logo.png
+  android_12:
+    image: "assets/tenants/blubank/splash_logo.png"

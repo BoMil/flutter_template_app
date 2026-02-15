@@ -1,0 +1,14 @@
+# This file is used only for local development in case devs want to generate the launcher icons for current tenant.
+# flutter pub run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/tenants/blubank/app_icon.png"
+
+  android: true
+  # image_path_android: "assets/icon/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+
+  ios: true
+  remove_alpha_channel_ios: true
+  image_path_ios: "assets/tenants/blubank/app_icon.png"
+  adaptive_icon_foreground: assets/tenants/blubank/app_icon.png
+  adaptive_icon_background: "#ffffff"

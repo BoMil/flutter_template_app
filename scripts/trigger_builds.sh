@@ -2,7 +2,7 @@
 set -e
 
 # Triggers Codemagic builds for tenants defined in Firebase Firestore.
-# Falls back to local tenants.json if Firestore is unavailable.
+# Build FAILS if Firestore is unavailable.
 #
 # Usage:
 #   # Build a single tenant:
@@ -36,20 +36,18 @@ WORKFLOW_ID="${WORKFLOW_ID:-android-workflow}"
 
 FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/$FIREBASE_PROJECT_ID/databases/(default)/documents"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TENANTS_FILE="$SCRIPT_DIR/../tenants.json"
-
 # --- Helper: fetch tenant config from Firestore ---
 fetch_tenant_from_firestore() {
   local tenant_id="$1"
   local response
   response=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants/$tenant_id")
 
-  # Check if response has fields (valid Firestore document)
   if echo "$response" | jq -e '.fields' > /dev/null 2>&1; then
     echo "$response"
     return 0
   else
+    echo "[ERROR] Failed to fetch tenant '$tenant_id' from Firestore" >&2
+    echo "[ERROR] Response: $response" >&2
     return 1
   fi
 }
@@ -61,26 +59,14 @@ parse_field() {
   echo "$doc" | jq -r ".fields.${field}.stringValue // empty"
 }
 
-# --- Helper: fetch tenant from local tenants.json fallback ---
-fetch_tenant_from_local() {
-  local tenant_id="$1"
-  if [ -f "$TENANTS_FILE" ]; then
-    jq -r --arg id "$tenant_id" '.[$id] // empty' "$TENANTS_FILE"
-  fi
-}
-
 # --- Determine which tenants to build ---
 if [ "$1" == "--all" ]; then
-  # Try Firestore first: list all documents
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")
   if echo "$ALL_DOCS" | jq -e '.documents' > /dev/null 2>&1; then
     TENANTS=$(echo "$ALL_DOCS" | jq -r '.documents[].name' | xargs -I{} basename {})
     echo "[INFO] Fetched tenant list from Firestore"
-  elif [ -f "$TENANTS_FILE" ]; then
-    TENANTS=$(jq -r 'keys[]' "$TENANTS_FILE")
-    echo "[WARN] Firestore unavailable, using local tenants.json"
   else
-    echo "[ERROR] Cannot fetch tenants from Firestore or tenants.json"
+    echo "[ERROR] Cannot fetch tenants from Firestore. Check FIREBASE_PROJECT_ID and Firestore rules."
     exit 1
   fi
 elif [ $# -gt 0 ]; then
@@ -92,42 +78,29 @@ else
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")
   if echo "$ALL_DOCS" | jq -e '.documents' > /dev/null 2>&1; then
     echo "$ALL_DOCS" | jq -r '.documents[] | "  \(.name | split("/") | last) - \(.fields.APP_NAME.stringValue) (\(.fields.PACKAGE_NAME.stringValue))"'
-  elif [ -f "$TENANTS_FILE" ]; then
-    echo "  (Firestore unavailable, showing local tenants.json)"
-    jq -r 'to_entries[] | "  \(.key) - \(.value.APP_NAME) (\(.value.PACKAGE_NAME))"' "$TENANTS_FILE"
+  else
+    echo "  [ERROR] Cannot fetch tenants from Firestore."
   fi
   exit 0
 fi
 
 # --- Trigger a build for each tenant ---
 for TENANT_ID in $TENANTS; do
-  # Try Firestore first, fallback to local
-  TENANT_DOC=$(fetch_tenant_from_firestore "$TENANT_ID" 2>/dev/null) && SOURCE="Firestore" || SOURCE=""
+  TENANT_DOC=$(fetch_tenant_from_firestore "$TENANT_ID")
 
-  if [ -n "$SOURCE" ]; then
-    APP_NAME=$(parse_field "$TENANT_DOC" "APP_NAME")
-    PACKAGE_NAME=$(parse_field "$TENANT_DOC" "PACKAGE_NAME")
-    SERVER_ADDRESS=$(parse_field "$TENANT_DOC" "SERVER_ADDRESS")
-    PRIMARY_COLOR=$(parse_field "$TENANT_DOC" "PRIMARY_COLOR")
-    ACCENT_COLOR=$(parse_field "$TENANT_DOC" "ACCENT_COLOR")
-    ERROR_COLOR=$(parse_field "$TENANT_DOC" "ERROR_COLOR")
-  else
-    # Fallback to tenants.json
-    LOCAL_CONFIG=$(fetch_tenant_from_local "$TENANT_ID")
-    if [ -z "$LOCAL_CONFIG" ]; then
-      echo "[ERROR] Tenant '$TENANT_ID' not found in Firestore or tenants.json, skipping."
-      continue
-    fi
-    SOURCE="tenants.json"
-    APP_NAME=$(echo "$LOCAL_CONFIG" | jq -r '.APP_NAME')
-    PACKAGE_NAME=$(echo "$LOCAL_CONFIG" | jq -r '.PACKAGE_NAME')
-    SERVER_ADDRESS=$(echo "$LOCAL_CONFIG" | jq -r '.SERVER_ADDRESS')
-    PRIMARY_COLOR=$(echo "$LOCAL_CONFIG" | jq -r '.PRIMARY_COLOR')
-    ACCENT_COLOR=$(echo "$LOCAL_CONFIG" | jq -r '.ACCENT_COLOR')
-    ERROR_COLOR=$(echo "$LOCAL_CONFIG" | jq -r '.ERROR_COLOR')
+  APP_NAME=$(parse_field "$TENANT_DOC" "APP_NAME")
+  PACKAGE_NAME=$(parse_field "$TENANT_DOC" "PACKAGE_NAME")
+  SERVER_ADDRESS=$(parse_field "$TENANT_DOC" "SERVER_ADDRESS")
+  PRIMARY_COLOR=$(parse_field "$TENANT_DOC" "PRIMARY_COLOR")
+  ACCENT_COLOR=$(parse_field "$TENANT_DOC" "ACCENT_COLOR")
+  ERROR_COLOR=$(parse_field "$TENANT_DOC" "ERROR_COLOR")
+
+  if [ -z "$APP_NAME" ] || [ -z "$PACKAGE_NAME" ]; then
+    echo "[ERROR] Tenant '$TENANT_ID' is missing required fields (APP_NAME, PACKAGE_NAME) in Firestore."
+    exit 1
   fi
 
-  echo "=== Triggering build for $APP_NAME ($PACKAGE_NAME) [source: $SOURCE] ==="
+  echo "=== Triggering build for $APP_NAME ($PACKAGE_NAME) ==="
 
   RESPONSE=$(curl -s -X POST "https://api.codemagic.io/builds" \
     -H "x-auth-token: $CM_API_TOKEN" \
@@ -158,6 +131,7 @@ for TENANT_ID in $TENANTS; do
   else
     echo "  [ERROR] Failed to trigger build:"
     echo "$RESPONSE" | jq .
+    exit 1
   fi
 
   echo ""

@@ -46,6 +46,17 @@ else
   exit 1
 fi
 
+# --- Ensure tenant asset directory is registered in pubspec.yaml ---
+PUBSPEC="$CM_BUILD_DIR/pubspec.yaml"
+ASSET_ENTRY="    - assets/tenants/$TENANT_ID/"
+if ! grep -qF "assets/tenants/$TENANT_ID/" "$PUBSPEC"; then
+  sed -i'' -e "/assets\/tenants\//a\\
+$ASSET_ENTRY" "$PUBSPEC"
+  echo "  [OK] Added assets/tenants/$TENANT_ID/ to pubspec.yaml"
+else
+  echo "  [OK] assets/tenants/$TENANT_ID/ already in pubspec.yaml"
+fi
+
 # --- Android: applicationId and namespace are read from PACKAGE_NAME env var in build.gradle ---
 echo "  [OK] Android build.gradle reads PACKAGE_NAME from env"
 

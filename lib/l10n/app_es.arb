@@ -22,5 +22,24 @@
         }
     },
     "changeLanguageToEnglish": "Cambiar idioma a Inglés",
-    "changeLanguageToSpanish": "Cambiar idioma a Español"
+    "changeLanguageToSpanish": "Cambiar idioma a Español",
+    "appTagline": "Tu socio de confianza en banca digital",
+    "settings": "Configuración",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "features": "Funciones",
+    "accountBalance": "Saldo de cuenta",
+    "accountBalanceDesc": "Consulta tu saldo en tiempo real y el historial de transacciones",
+    "payments": "Pagos",
+    "paymentsDesc": "Envía y recibe dinero al instante",
+    "cards": "Tarjetas",
+    "cardsDesc": "Administra tus tarjetas virtuales y físicas",
+    "analytics": "Análisis",
+    "analyticsDesc": "Controla tus gastos con información detallada",
+    "colorPalette": "Colores de marca",
+    "primary": "Primario",
+    "accent": "Acento",
+    "error": "Error",
+    "lightMode": "Claro",
+    "darkMode": "Oscuro"
 }

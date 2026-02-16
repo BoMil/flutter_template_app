@@ -22,5 +22,24 @@
         }
     },
     "changeLanguageToEnglish": "Change language to English",
-    "changeLanguageToSpanish": "Change language to Spanish"
+    "changeLanguageToSpanish": "Change language to Spanish",
+    "appTagline": "Your trusted digital banking partner",
+    "settings": "Settings",
+    "appearance": "Appearance",
+    "language": "Language",
+    "features": "Features",
+    "accountBalance": "Account Balance",
+    "accountBalanceDesc": "View your real-time balance and transaction history",
+    "payments": "Payments",
+    "paymentsDesc": "Send and receive money instantly",
+    "cards": "Cards",
+    "cardsDesc": "Manage your virtual and physical cards",
+    "analytics": "Analytics",
+    "analyticsDesc": "Track your spending with detailed insights",
+    "colorPalette": "Brand Colors",
+    "primary": "Primary",
+    "accent": "Accent",
+    "error": "Error",
+    "lightMode": "Light",
+    "darkMode": "Dark"
 }

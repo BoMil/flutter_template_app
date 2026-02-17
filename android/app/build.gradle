@@ -66,3 +66,10 @@ android {
 flutter {
     source = "../.."
 }
+
+// Apply Google Services plugin only when google-services.json is present.
+// On CI, set_tenant_branding.sh downloads it from Firebase Storage before the build.
+// Locally, the app runs without Firebase if the file is missing.
+if (file("google-services.json").exists()) {
+    apply plugin: "com.google.gms.google-services"
+}

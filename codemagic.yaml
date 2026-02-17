@@ -33,9 +33,17 @@ workflows:
           ACCENT_COLOR=${ACCENT_COLOR:-FFFFD600}
           ERROR_COLOR=${ERROR_COLOR:-FFEB2E25}
           PACKAGE_NAME=${PACKAGE_NAME}
+          FIREBASE_ANDROID_API_KEY=${FIREBASE_ANDROID_API_KEY}
+          FIREBASE_ANDROID_APP_ID=${FIREBASE_ANDROID_APP_ID}
+          FIREBASE_IOS_API_KEY=${FIREBASE_IOS_API_KEY}
+          FIREBASE_IOS_APP_ID=${FIREBASE_IOS_APP_ID}
+          FIREBASE_IOS_BUNDLE_ID=${FIREBASE_IOS_BUNDLE_ID}
+          FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+          FIREBASE_TENANT_PROJECT_ID=${FIREBASE_TENANT_PROJECT_ID}
+          FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
           EOL
 # flutter build appbundle --release ! OVO koristi za produkciju
-      - name: Build AAB with Flutter
+      - name: Build APK with Flutter
         script: |
           flutter build apk --release \
             --dart-define-from-file=.env/tenant.env \
@@ -43,7 +51,7 @@ workflows:
             --build-number=$(($(date +%s) / 60))
     artifacts:
       - build/**/outputs/**/*.apk
-      - build/**/outputs/**/*.aab
+      # - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
     publishing:
       email:

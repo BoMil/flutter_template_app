@@ -92,6 +92,23 @@ cd "$CM_BUILD_DIR"
 dart run flutter_launcher_icons -f flutter_launcher_icons.yaml
 echo "  [OK] Launcher icons generated for Android and iOS"
 
+# --- Download Firebase config files from Storage ---
+GOOGLE_SERVICES="$CM_BUILD_DIR/android/app/google-services.json"
+if download_from_storage "tenants/$TENANT_ID/firebase/google-services.json" "$GOOGLE_SERVICES"; then
+  echo "  [OK] google-services.json downloaded from Firebase Storage"
+else
+  echo "  [ERROR] google-services.json not found in Storage: tenants/$TENANT_ID/firebase/google-services.json"
+  exit 1
+fi
+
+GOOGLE_SERVICE_PLIST="$CM_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
+if download_from_storage "tenants/$TENANT_ID/firebase/GoogleService-Info.plist" "$GOOGLE_SERVICE_PLIST"; then
+  echo "  [OK] GoogleService-Info.plist downloaded from Firebase Storage"
+else
+  echo "  [ERROR] GoogleService-Info.plist not found in Storage: tenants/$TENANT_ID/firebase/GoogleService-Info.plist"
+  exit 1
+fi
+
 # --- iOS: Patch bundle identifier in project.pbxproj ---
 PBXPROJ="$CM_BUILD_DIR/ios/Runner.xcodeproj/project.pbxproj"
 if [ -f "$PBXPROJ" ]; then

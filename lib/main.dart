@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_template_app/config/environment/environment.dart';
+import 'package:flutter_template_app/config/firebase/firebase_config.dart';
 import 'package:flutter_template_app/config/routes/router_config.dart';
 import 'package:flutter_template_app/config/routes/routes.dart';
 import 'package:flutter_template_app/config/translations/translation_storage.dart';
@@ -20,8 +22,12 @@ void main() async {
   }
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Build production APK: fvm flutter build apk --dart-define-from-file=.env/production.env
-  // Build staging APK: fvm flutter build apk --dart-define-from-file=.env/staging.env
+  // Initialize Firebase if configured for this tenant
+  if (FirebaseConfig().isConfigured) {
+    await Firebase.initializeApp(
+      options: FirebaseConfig().currentPlatform,
+    );
+  }
 
   AppInterceptor().initializeInterceptor();
 

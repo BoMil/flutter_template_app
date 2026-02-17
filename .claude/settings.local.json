@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(chmod:*)",
-      "Bash(fvm flutter gen-l10n:*)"
+      "Bash(fvm flutter gen-l10n:*)",
+      "Bash(flutter pub add:*)"
     ]
   }
 }

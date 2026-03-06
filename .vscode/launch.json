@@ -2,44 +2,64 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "WhiteBank",
+            "name": "WhiteBank (development)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/whitebank.env"
-            ],
+                ".env/whitebank.development.env"
+            ]
         },
         {
-            "name": "BluBank",
+            "name": "WhiteBank (staging)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/blubank.env"
-            ],
+                ".env/whitebank.staging.env"
+            ]
         },
         {
-            "name": "RedBank",
+            "name": "WhiteBank (production)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/redbank.env"
-            ],
+                ".env/whitebank.production.env"
+            ]
         },
         {
-            "name": "YellowBank",
+            "name": "BluBank (development)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/yellowbank.env"
-            ],
+                ".env/blubank.development.env"
+            ]
+        },
+        {
+            "name": "BluBank (staging)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define-from-file",
+                ".env/blubank.staging.env"
+            ]
+        },
+        {
+            "name": "BluBank (production)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define-from-file",
+                ".env/blubank.production.env"
+            ]
         }
     ]
 }

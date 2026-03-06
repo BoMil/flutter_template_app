@@ -5,19 +5,22 @@ set -e
 # Build FAILS if Firestore is unavailable.
 #
 # Usage:
-#   # Build a single tenant:
+#   # Build a single tenant for a specific environment:
+#   ./scripts/trigger_builds.sh --env=development whitebank
+#   ./scripts/trigger_builds.sh --env=staging whitebank blubank
+#   ./scripts/trigger_builds.sh --env=production --all
+#
+#   # Default environment is production:
 #   ./scripts/trigger_builds.sh whitebank
-#
-#   # Build multiple tenants:
-#   ./scripts/trigger_builds.sh whitebank blubank redbank
-#
-#   # Build ALL tenants:
-#   ./scripts/trigger_builds.sh --all
 #
 # Required environment variables:
 #   CM_API_TOKEN           - Your Codemagic API token (Settings > Integrations)
 #   CM_APP_ID              - Your Codemagic App ID (visible in the project URL)
 #   FIREBASE_PROJECT_ID    - Your Firebase project ID
+#
+# Firestore tenant document structure:
+#   Shared fields (top-level): APP_NAME, PACKAGE_NAME, PRIMARY_COLOR, ACCENT_COLOR, ERROR_COLOR
+#   Per-environment (nested map): development.SERVER_ADDRESS, development.FIREBASE_*, staging.*, production.*
 
 # Load local secrets if available
 SCRIPT_DIR_INIT="$(cd "$(dirname "$0")" && pwd)"
@@ -32,8 +35,32 @@ CM_API_TOKEN="${CM_API_TOKEN:?Set CM_API_TOKEN in .env.local or as environment v
 CM_APP_ID="${CM_APP_ID:?Set CM_APP_ID in .env.local or as environment variable}"
 FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID:-white-label-financeapp-b274a}"
 BRANCH="${BRANCH:-white-label}"
-WORKFLOW_ID="${WORKFLOW_ID:-android-workflow}"
 
+# --- Parse --env= argument ---
+ENV="production"
+ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --env=*)
+      ENV="${arg#--env=}"
+      ;;
+    *)
+      ARGS+=("$arg")
+      ;;
+  esac
+done
+set -- "${ARGS[@]}"
+
+# Validate environment
+case "$ENV" in
+  development|staging|production) ;;
+  *)
+    echo "[ERROR] Invalid environment '$ENV'. Use: development, staging, or production"
+    exit 1
+    ;;
+esac
+
+WORKFLOW_ID="android-${ENV}"
 FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/$FIREBASE_PROJECT_ID/databases/(default)/documents"
 
 # --- Helper: fetch tenant config from Firestore ---
@@ -52,15 +79,25 @@ fetch_tenant_from_firestore() {
   fi
 }
 
-# --- Helper: parse Firestore document field ---
+# --- Helper: parse top-level Firestore field (shared branding) ---
 parse_field() {
   local doc="$1"
   local field="$2"
   echo "$doc" | jq -r ".fields.${field}.stringValue // empty"
 }
 
+# --- Helper: parse environment-specific nested Firestore field ---
+# Firestore structure: tenants/{id}.{env}.{field}
+# e.g. tenants/whitebank.development.SERVER_ADDRESS
+parse_env_field() {
+  local doc="$1"
+  local env="$2"
+  local field="$3"
+  echo "$doc" | jq -r ".fields.${env}.mapValue.fields.${field}.stringValue // empty"
+}
+
 # --- Determine which tenants to build ---
-if [ "$1" == "--all" ]; then
+if [ "${1:-}" == "--all" ]; then
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")
   if echo "$ALL_DOCS" | jq -e '.documents' > /dev/null 2>&1; then
     TENANTS=$(echo "$ALL_DOCS" | jq -r '.documents[].name' | xargs -I{} basename {})
@@ -72,7 +109,7 @@ if [ "$1" == "--all" ]; then
 elif [ $# -gt 0 ]; then
   TENANTS="$@"
 else
-  echo "Usage: $0 <tenant_id> [tenant_id...] | --all"
+  echo "Usage: $0 [--env=development|staging|production] <tenant_id> [tenant_id...] | --all"
   echo ""
   echo "Available tenants (from Firestore):"
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")
@@ -88,29 +125,34 @@ fi
 for TENANT_ID in $TENANTS; do
   TENANT_DOC=$(fetch_tenant_from_firestore "$TENANT_ID")
 
+  # Shared fields — same across all environments
   APP_NAME=$(parse_field "$TENANT_DOC" "APP_NAME")
   PACKAGE_NAME=$(parse_field "$TENANT_DOC" "PACKAGE_NAME")
-  SERVER_ADDRESS=$(parse_field "$TENANT_DOC" "SERVER_ADDRESS")
   PRIMARY_COLOR=$(parse_field "$TENANT_DOC" "PRIMARY_COLOR")
   ACCENT_COLOR=$(parse_field "$TENANT_DOC" "ACCENT_COLOR")
   ERROR_COLOR=$(parse_field "$TENANT_DOC" "ERROR_COLOR")
-  # Firebase - platform-specific
-  FIREBASE_ANDROID_API_KEY=$(parse_field "$TENANT_DOC" "FIREBASE_ANDROID_API_KEY")
-  FIREBASE_ANDROID_APP_ID=$(parse_field "$TENANT_DOC" "FIREBASE_ANDROID_APP_ID")
-  FIREBASE_IOS_API_KEY=$(parse_field "$TENANT_DOC" "FIREBASE_IOS_API_KEY")
-  FIREBASE_IOS_APP_ID=$(parse_field "$TENANT_DOC" "FIREBASE_IOS_APP_ID")
-  FIREBASE_IOS_BUNDLE_ID=$(parse_field "$TENANT_DOC" "FIREBASE_IOS_BUNDLE_ID")
-  # Firebase - shared (project-level)
-  FIREBASE_MESSAGING_SENDER_ID=$(parse_field "$TENANT_DOC" "FIREBASE_MESSAGING_SENDER_ID")
-  FIREBASE_TENANT_PROJECT_ID=$(parse_field "$TENANT_DOC" "FIREBASE_TENANT_PROJECT_ID")
-  FIREBASE_STORAGE_BUCKET=$(parse_field "$TENANT_DOC" "FIREBASE_STORAGE_BUCKET")
+
+  # Environment-specific fields — read from nested map
+  SERVER_ADDRESS=$(parse_env_field "$TENANT_DOC" "$ENV" "SERVER_ADDRESS")
+  FIREBASE_ANDROID_API_KEY=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_ANDROID_API_KEY")
+  FIREBASE_ANDROID_APP_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_ANDROID_APP_ID")
+  FIREBASE_IOS_API_KEY=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_IOS_API_KEY")
+  FIREBASE_IOS_APP_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_IOS_APP_ID")
+  FIREBASE_IOS_BUNDLE_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_IOS_BUNDLE_ID")
+  FIREBASE_MESSAGING_SENDER_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_MESSAGING_SENDER_ID")
+  FIREBASE_TENANT_PROJECT_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_TENANT_PROJECT_ID")
+  FIREBASE_STORAGE_BUCKET=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_STORAGE_BUCKET")
 
   if [ -z "$APP_NAME" ] || [ -z "$PACKAGE_NAME" ]; then
-    echo "[ERROR] Tenant '$TENANT_ID' is missing required fields (APP_NAME, PACKAGE_NAME) in Firestore."
+    echo "[ERROR] Tenant '$TENANT_ID' is missing required shared fields (APP_NAME, PACKAGE_NAME) in Firestore."
     exit 1
   fi
 
-  echo "=== Triggering build for $APP_NAME ($PACKAGE_NAME) ==="
+  if [ -z "$SERVER_ADDRESS" ]; then
+    echo "[WARN] Tenant '$TENANT_ID' has no SERVER_ADDRESS for '$ENV' environment in Firestore."
+  fi
+
+  echo "=== Triggering [$ENV] build for $APP_NAME ($PACKAGE_NAME) ==="
 
   RESPONSE=$(curl -s -X POST "https://api.codemagic.io/builds" \
     -H "x-auth-token: $CM_API_TOKEN" \
@@ -122,6 +164,7 @@ for TENANT_ID in $TENANTS; do
       \"environment\": {
         \"variables\": {
           \"TENANT_ID\": \"$TENANT_ID\",
+          \"ENVIRONMENT\": \"$ENV\",
           \"APP_NAME\": \"$APP_NAME\",
           \"PACKAGE_NAME\": \"$PACKAGE_NAME\",
           \"SERVER_ADDRESS\": \"$SERVER_ADDRESS\",

@@ -1,6 +1,6 @@
 workflows:
-  android-workflow:
-    name: Android Workflow
+  android-development:
+    name: Android - Development
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment:
@@ -9,6 +9,7 @@ workflows:
       flutter: fvm
       vars:
         FIREBASE_PROJECT_ID: "white-label-financeapp-b274a"
+        ENVIRONMENT: "development"
     scripts:
       - name: Set up local.properties
         script: |
@@ -25,8 +26,134 @@ workflows:
         script: |
           mkdir -p "$CM_BUILD_DIR/.env"
           cat > "$CM_BUILD_DIR/.env/tenant.env" << EOL
-          ENVIRONMENT=${ENVIRONMENT:-PRODUCTION}
-          SERVER_ADDRESS=${SERVER_ADDRESS:-https://api.default.example.com}
+          ENVIRONMENT=${ENVIRONMENT}
+          SERVER_ADDRESS=${SERVER_ADDRESS}
+          TENANT_ID=${TENANT_ID}
+          APP_NAME=${APP_NAME}
+          PRIMARY_COLOR=${PRIMARY_COLOR:-FF1B5E20}
+          ACCENT_COLOR=${ACCENT_COLOR:-FFFFD600}
+          ERROR_COLOR=${ERROR_COLOR:-FFEB2E25}
+          PACKAGE_NAME=${PACKAGE_NAME}
+          FIREBASE_ANDROID_API_KEY=${FIREBASE_ANDROID_API_KEY}
+          FIREBASE_ANDROID_APP_ID=${FIREBASE_ANDROID_APP_ID}
+          FIREBASE_IOS_API_KEY=${FIREBASE_IOS_API_KEY}
+          FIREBASE_IOS_APP_ID=${FIREBASE_IOS_APP_ID}
+          FIREBASE_IOS_BUNDLE_ID=${FIREBASE_IOS_BUNDLE_ID}
+          FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+          FIREBASE_TENANT_PROJECT_ID=${FIREBASE_TENANT_PROJECT_ID}
+          FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+          EOL
+# flutter build appbundle --release ! OVO koristi za produkciju
+      - name: Build APK with Flutter
+        script: |
+          flutter build apk --release \
+            --dart-define-from-file=.env/tenant.env \
+            --build-name=1.0.0 \
+            --build-number=$(($(date +%s) / 60))
+    artifacts:
+      - build/**/outputs/**/*.apk
+      # - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - bokimilicevic.poslovni@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  android-staging:
+    name: Android - Staging
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      android_signing:
+        - keystore_reference
+      flutter: fvm
+      vars:
+        FIREBASE_PROJECT_ID: "white-label-financeapp-b274a"
+        ENVIRONMENT: "staging"
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Flutter analyze
+        script: flutter analyze
+      - name: Apply tenant branding
+        script: |
+          chmod +x "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+          "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+      - name: Generate tenant env file
+        script: |
+          mkdir -p "$CM_BUILD_DIR/.env"
+          cat > "$CM_BUILD_DIR/.env/tenant.env" << EOL
+          ENVIRONMENT=${ENVIRONMENT}
+          SERVER_ADDRESS=${SERVER_ADDRESS}
+          TENANT_ID=${TENANT_ID}
+          APP_NAME=${APP_NAME}
+          PRIMARY_COLOR=${PRIMARY_COLOR:-FF1B5E20}
+          ACCENT_COLOR=${ACCENT_COLOR:-FFFFD600}
+          ERROR_COLOR=${ERROR_COLOR:-FFEB2E25}
+          PACKAGE_NAME=${PACKAGE_NAME}
+          FIREBASE_ANDROID_API_KEY=${FIREBASE_ANDROID_API_KEY}
+          FIREBASE_ANDROID_APP_ID=${FIREBASE_ANDROID_APP_ID}
+          FIREBASE_IOS_API_KEY=${FIREBASE_IOS_API_KEY}
+          FIREBASE_IOS_APP_ID=${FIREBASE_IOS_APP_ID}
+          FIREBASE_IOS_BUNDLE_ID=${FIREBASE_IOS_BUNDLE_ID}
+          FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+          FIREBASE_TENANT_PROJECT_ID=${FIREBASE_TENANT_PROJECT_ID}
+          FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+          EOL
+# flutter build appbundle --release ! OVO koristi za produkciju
+      - name: Build APK with Flutter
+        script: |
+          flutter build apk --release \
+            --dart-define-from-file=.env/tenant.env \
+            --build-name=1.0.0 \
+            --build-number=$(($(date +%s) / 60))
+    artifacts:
+      - build/**/outputs/**/*.apk
+      # - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - bokimilicevic.poslovni@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  android-production:
+    name: Android - Production
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      android_signing:
+        - keystore_reference
+      flutter: fvm
+      vars:
+        FIREBASE_PROJECT_ID: "white-label-financeapp-b274a"
+        ENVIRONMENT: "production"
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Flutter analyze
+        script: flutter analyze
+      - name: Apply tenant branding
+        script: |
+          chmod +x "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+          "$CM_BUILD_DIR/scripts/set_tenant_branding.sh"
+      - name: Generate tenant env file
+        script: |
+          mkdir -p "$CM_BUILD_DIR/.env"
+          cat > "$CM_BUILD_DIR/.env/tenant.env" << EOL
+          ENVIRONMENT=${ENVIRONMENT}
+          SERVER_ADDRESS=${SERVER_ADDRESS}
           TENANT_ID=${TENANT_ID}
           APP_NAME=${APP_NAME}
           PRIMARY_COLOR=${PRIMARY_COLOR:-FF1B5E20}

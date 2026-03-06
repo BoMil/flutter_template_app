@@ -21,6 +21,8 @@ set -e
 # Firestore tenant document structure:
 #   Shared fields (top-level): APP_NAME, PACKAGE_NAME, PRIMARY_COLOR, ACCENT_COLOR, ERROR_COLOR
 #   Per-environment (nested map): development.SERVER_ADDRESS, development.FIREBASE_*, staging.*, production.*
+#   Feature flags (nested map): features.THEME_CHANGE, features.LANGUAGE, features.ACCOUNT_BALANCE,
+#                                features.PAYMENTS, features.CARDS, features.ANALYTICS
 
 # Load local secrets if available
 SCRIPT_DIR_INIT="$(cd "$(dirname "$0")" && pwd)"
@@ -98,6 +100,14 @@ parse_env_field() {
   echo "$doc" | jq -r ".fields.${env}.mapValue.fields.${field}.stringValue // empty"
 }
 
+# --- Helper: parse boolean feature flag from Firestore features map ---
+# Returns "true" or "false". Defaults to "true" if field is missing.
+parse_feature_flag() {
+  local doc="$1"
+  local flag="$2"
+  echo "$doc" | jq -r ".fields.features.mapValue.fields.${flag}.booleanValue // true"
+}
+
 # --- Determine which tenants to build ---
 if [ "${1:-}" == "--all" ]; then
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")
@@ -145,6 +155,14 @@ for TENANT_ID in $TENANTS; do
   FIREBASE_TENANT_PROJECT_ID=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_TENANT_PROJECT_ID")
   FIREBASE_STORAGE_BUCKET=$(parse_env_field "$TENANT_DOC" "$ENV" "FIREBASE_STORAGE_BUCKET")
 
+  # Feature flags — read from features nested map (default: true)
+  FEATURE_THEME_CHANGE=$(parse_feature_flag "$TENANT_DOC" "THEME_CHANGE")
+  FEATURE_LANGUAGE=$(parse_feature_flag "$TENANT_DOC" "LANGUAGE")
+  FEATURE_ACCOUNT_BALANCE=$(parse_feature_flag "$TENANT_DOC" "ACCOUNT_BALANCE")
+  FEATURE_PAYMENTS=$(parse_feature_flag "$TENANT_DOC" "PAYMENTS")
+  FEATURE_CARDS=$(parse_feature_flag "$TENANT_DOC" "CARDS")
+  FEATURE_ANALYTICS=$(parse_feature_flag "$TENANT_DOC" "ANALYTICS")
+
   if [ -z "$APP_NAME" ] || [ -z "$PACKAGE_NAME" ]; then
     echo "[ERROR] Tenant '$TENANT_ID' is missing required shared fields (APP_NAME, PACKAGE_NAME) in Firestore."
     exit 1
@@ -181,7 +199,13 @@ for TENANT_ID in $TENANTS; do
           \"FIREBASE_IOS_BUNDLE_ID\": \"$FIREBASE_IOS_BUNDLE_ID\",
           \"FIREBASE_MESSAGING_SENDER_ID\": \"$FIREBASE_MESSAGING_SENDER_ID\",
           \"FIREBASE_TENANT_PROJECT_ID\": \"$FIREBASE_TENANT_PROJECT_ID\",
-          \"FIREBASE_STORAGE_BUCKET\": \"$FIREBASE_STORAGE_BUCKET\"
+          \"FIREBASE_STORAGE_BUCKET\": \"$FIREBASE_STORAGE_BUCKET\",
+          \"FEATURE_THEME_CHANGE\": \"$FEATURE_THEME_CHANGE\",
+          \"FEATURE_LANGUAGE\": \"$FEATURE_LANGUAGE\",
+          \"FEATURE_ACCOUNT_BALANCE\": \"$FEATURE_ACCOUNT_BALANCE\",
+          \"FEATURE_PAYMENTS\": \"$FEATURE_PAYMENTS\",
+          \"FEATURE_CARDS\": \"$FEATURE_CARDS\",
+          \"FEATURE_ANALYTICS\": \"$FEATURE_ANALYTICS\"
         }
       }
     }")

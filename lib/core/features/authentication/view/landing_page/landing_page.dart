@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_template_app/config/tenant/feature_flags.dart';
 import 'package:flutter_template_app/config/tenant/tenant_config.dart';
 import 'package:flutter_template_app/config/translations/enums/language.dart';
 import 'package:flutter_template_app/config/translations/translation_storage.dart';
@@ -114,6 +115,58 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   Widget _buildSettingsSection(dynamic t) {
+    final features = FeatureFlags();
+    final showTheme = features.themeChange;
+    final showLanguage = features.language;
+
+    if (!showTheme && !showLanguage) return const SizedBox.shrink();
+
+    final rows = <Widget>[];
+
+    if (showTheme) {
+      rows.add(Row(
+        children: [
+          Icon(Icons.brightness_6_outlined, size: 20, color: context.colors.primaryText),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              t.appearance,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.primaryText),
+            ),
+          ),
+          _buildToggleChips(
+            options: [(t.lightMode, !isDark), (t.darkMode, isDark)],
+            onTap: (index) => _switchTheme(index == 1),
+          ),
+        ],
+      ));
+    }
+
+    if (showTheme && showLanguage) {
+      rows.add(const SizedBox(height: 16));
+      rows.add(Divider(height: 1, color: context.colors.primaryText.withOpacity(0.1)));
+      rows.add(const SizedBox(height: 16));
+    }
+
+    if (showLanguage) {
+      rows.add(Row(
+        children: [
+          Icon(Icons.language, size: 20, color: context.colors.primaryText),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              t.language,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.primaryText),
+            ),
+          ),
+          _buildToggleChips(
+            options: [('EN', currentLang == 'en'), ('ES', currentLang == 'es')],
+            onTap: (index) => _changeLanguage(index == 0 ? 'en' : 'es'),
+          ),
+        ],
+      ));
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -125,70 +178,7 @@ class _LandingPageState extends State<LandingPage> {
             color: context.colors.secondaryBackground,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.brightness_6_outlined,
-                    size: 20,
-                    color: context.colors.primaryText,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      t.appearance,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: context.colors.primaryText,
-                      ),
-                    ),
-                  ),
-                  _buildToggleChips(
-                    options: [
-                      (t.lightMode, !isDark),
-                      (t.darkMode, isDark),
-                    ],
-                    onTap: (index) => _switchTheme(index == 1),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Divider(
-                height: 1,
-                color: context.colors.primaryText.withOpacity(0.1),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(
-                    Icons.language,
-                    size: 20,
-                    color: context.colors.primaryText,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      t.language,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: context.colors.primaryText,
-                      ),
-                    ),
-                  ),
-                  _buildToggleChips(
-                    options: [
-                      ('EN', currentLang == 'en'),
-                      ('ES', currentLang == 'es'),
-                    ],
-                    onTap: (index) => _changeLanguage(index == 0 ? 'en' : 'es'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          child: Column(children: rows),
         ),
       ],
     );
@@ -231,12 +221,17 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   Widget _buildFeaturesSection(dynamic t) {
-    final features = [
-      (Icons.account_balance_wallet_outlined, t.accountBalance, t.accountBalanceDesc),
-      (Icons.swap_horiz, t.payments, t.paymentsDesc),
-      (Icons.credit_card_outlined, t.cards, t.cardsDesc),
-      (Icons.bar_chart_outlined, t.analytics, t.analyticsDesc),
+    final flags = FeatureFlags();
+    final allFeatures = [
+      if (flags.accountBalance) (Icons.account_balance_wallet_outlined, t.accountBalance, t.accountBalanceDesc),
+      if (flags.payments) (Icons.swap_horiz, t.payments, t.paymentsDesc),
+      if (flags.cards) (Icons.credit_card_outlined, t.cards, t.cardsDesc),
+      if (flags.analytics) (Icons.bar_chart_outlined, t.analytics, t.analyticsDesc),
     ];
+
+    if (allFeatures.isEmpty) return const SizedBox.shrink();
+
+    final features = allFeatures;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

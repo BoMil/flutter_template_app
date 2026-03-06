@@ -34,15 +34,17 @@ fi
 CM_API_TOKEN="${CM_API_TOKEN:?Set CM_API_TOKEN in .env.local or as environment variable}"
 CM_APP_ID="${CM_APP_ID:?Set CM_APP_ID in .env.local or as environment variable}"
 FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID:-white-label-financeapp-b274a}"
-BRANCH="${BRANCH:-white-label}"
-
-# --- Parse --env= argument ---
+# --- Parse --env= and --branch= arguments ---
 ENV="production"
+BRANCH="white-label"
 ARGS=()
 for arg in "$@"; do
   case "$arg" in
     --env=*)
       ENV="${arg#--env=}"
+      ;;
+    --branch=*)
+      BRANCH="${arg#--branch=}"
       ;;
     *)
       ARGS+=("$arg")
@@ -109,7 +111,7 @@ if [ "${1:-}" == "--all" ]; then
 elif [ $# -gt 0 ]; then
   TENANTS="$@"
 else
-  echo "Usage: $0 [--env=development|staging|production] <tenant_id> [tenant_id...] | --all"
+  echo "Usage: $0 [--env=development|staging|production] [--branch=white-label] <tenant_id> [tenant_id...] | --all"
   echo ""
   echo "Available tenants (from Firestore):"
   ALL_DOCS=$(curl -s --max-time 10 "$FIRESTORE_BASE/tenants")

@@ -102,10 +102,11 @@ parse_env_field() {
 
 # --- Helper: parse boolean feature flag from Firestore features map ---
 # Returns "true" or "false". Defaults to "true" if field is missing.
+# NOTE: jq's // operator treats false as falsy, so we use explicit null check instead.
 parse_feature_flag() {
   local doc="$1"
   local flag="$2"
-  echo "$doc" | jq -r ".fields.features.mapValue.fields.${flag}.booleanValue // true"
+  echo "$doc" | jq -r "if .fields.features.mapValue.fields.${flag}.booleanValue == null then true else .fields.features.mapValue.fields.${flag}.booleanValue end"
 }
 
 # --- Determine which tenants to build ---

@@ -8,7 +8,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/whitebank.development.env"
+                ".env/whitebank.development.json"
             ]
         },
         {
@@ -18,7 +18,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/whitebank.staging.env"
+                ".env/whitebank.staging.json"
             ]
         },
         {
@@ -28,7 +28,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/whitebank.production.env"
+                ".env/whitebank.production.json"
             ]
         },
         {
@@ -38,7 +38,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/blubank.development.env"
+                ".env/blubank.development.json"
             ]
         },
         {
@@ -48,7 +48,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/blubank.staging.env"
+                ".env/blubank.staging.json"
             ]
         },
         {
@@ -58,7 +58,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/blubank.production.env"
+                ".env/blubank.production.json"
             ]
         }
     ]
